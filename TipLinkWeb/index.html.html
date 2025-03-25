@@ -1,0 +1,49 @@
+<script type="module">
+   // Firebase SDK
+   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+   import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+   // Your Firebase Config
+   const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+   };
+
+   // Initialize Firebase
+   const app = initializeApp(firebaseConfig);
+   const db = getFirestore(app);
+
+   // Fetch User Data
+   const urlParams = new URLSearchParams(window.location.search);
+   const userId = urlParams.get('id');
+
+   async function loadUser() {
+       const userRef = doc(db, "users", userId);
+       const userSnap = await getDoc(userRef);
+
+       if (userSnap.exists()) {
+           const userData = userSnap.data();
+           document.getElementById("tipeeName").innerText = userData.name;
+           document.getElementById("profilePic").src = userData.profilePic;
+
+           // Create payment buttons
+           const paymentOptions = document.getElementById("paymentOptions");
+           Object.entries(userData.payments).forEach(([method, link]) => {
+               let button = document.createElement("a");
+               button.href = link;
+               button.target = "_blank";
+               button.className = "block w-full bg-blue-600 py-3 rounded-lg shadow hover:bg-blue-700 transition";
+               button.innerText = `Pay with ${method.charAt(0).toUpperCase() + method.slice(1)}`;
+               paymentOptions.appendChild(button);
+           });
+       } else {
+           document.getElementById("tipeeName").innerText = "User Not Found";
+       }
+   }
+
+   loadUser();
+</script>
